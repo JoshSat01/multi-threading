@@ -1,0 +1,24 @@
+
+/*
+    * how_compiler_make_AST.cpp
+    *
+    *  Created on: 2019年10月16日       
+*/
+#define _Acquires_exclusive_lock_(lock) __attribute__((acquire(lock))) 
+
+
+//using macro
+void func() _Acquires_exclusive_lock_(mylock) {
+    //...
+}
+
+#define _Acquires_exclusive_lock_(lock) __attribute__((acquire(lock)))
+
+_Acquires_exclusive_lock_(g_lock)
+void my_function() {
+    mutex_lock(&g_lock);
+    if (condition) {
+        return;  // Bug: missing unlock!
+    }
+    mutex_unlock(&g_lock);
+}

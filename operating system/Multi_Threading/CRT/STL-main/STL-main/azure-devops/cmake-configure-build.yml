@@ -1,0 +1,48 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+- name: targetArch
+  type: string
+- name: targetPlatform
+  type: string
+- name: analyzeBuild
+  type: boolean
+- name: asanBuild
+  type: boolean
+- name: testsBuildOnly
+  type: boolean
+- name: litFlags
+  type: object
+  default:
+    - '--xunit-xml-output=$(buildOutputLocation)/test-results.xml'
+    - '--order=lexical'
+    - '--num-shards=$(System.TotalJobsInPhase)'
+    - '--run-shard=$(System.JobPositionInPhase)'
+
+steps:
+- script: |
+    if exist "$(buildOutputLocation)" (
+      rmdir /S /Q "$(buildOutputLocation)"
+    )
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake -G Ninja ^
+    -DCMAKE_CXX_COMPILER=cl ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DLIT_FLAGS=${{ join(';', parameters.litFlags) }} ^
+    -DSTL_USE_ANALYZE=${{ parameters.analyzeBuild }} ^
+    -DSTL_ASAN_BUILD=${{ parameters.asanBuild }} ^
+    -DTESTS_BUILD_ONLY=${{ parameters.testsBuildOnly }} ^
+    -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }} ^
+    -S $(Build.SourcesDirectory) -B "$(buildOutputLocation)"
+  displayName: 'Configure the STL'
+  timeoutInMinutes: 2
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+- script: |
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake --build "$(buildOutputLocation)"
+  displayName: 'Build the STL'
+  timeoutInMinutes: 5
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }

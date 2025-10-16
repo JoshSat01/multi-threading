@@ -1,0 +1,36 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+- name: targetArch
+  type: string
+- name: targetPlatform
+  type: string
+- name: testTargets
+  type: string
+- name: skipTesting
+  type: boolean
+steps:
+- script: |
+    call "$(vsDevCmdBat)" -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    ninja --verbose -k 0 ${{ parameters.testTargets }}
+  displayName: 'Build and Run Tests'
+  timeoutInMinutes: 30
+  condition: and(succeeded(), not(${{ parameters.skipTesting }}))
+  workingDirectory: $(buildOutputLocation)
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+- task: PublishTestResults@2
+  displayName: 'Publish Tests'
+  timeoutInMinutes: 5
+  condition: and(succeededOrFailed(), not(${{ parameters.skipTesting }}))
+  inputs:
+    searchFolder: $(buildOutputLocation)
+    testResultsFormat: JUnit
+    testResultsFiles: '**/test-results.xml'
+    testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
+- publish: $(buildOutputLocation)/test-results.xml
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
+  condition: and(failed(), not(${{ parameters.skipTesting }}))
+  displayName: 'Publish XML Artifact'

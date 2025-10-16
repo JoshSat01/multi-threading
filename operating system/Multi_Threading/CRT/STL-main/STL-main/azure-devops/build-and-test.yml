@@ -1,0 +1,82 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+- name: targetArch
+  type: string
+- name: targetPlatform
+  type: string
+- name: analyzeBuild
+  type: boolean
+  default: false
+- name: asanBuild
+  type: boolean
+  default: false
+- name: buildBenchmarks
+  type: boolean
+  default: false
+- name: testTargets
+  type: string
+  default: 'STL-CI'
+- name: numShards
+  type: number
+  default: 8
+- name: skipTesting
+  type: boolean
+  default: false
+- name: testsBuildOnly
+  type: boolean
+  default: false
+jobs:
+- job: '${{ parameters.targetPlatform }}'
+  strategy:
+    parallel: ${{ parameters.numShards }}
+  timeoutInMinutes: 30
+  steps:
+  - template: checkout-self.yml
+  - template: checkout-submodule.yml
+    parameters:
+      enabled: ${{ not(parameters.skipTesting) }}
+      path: 'llvm-project'
+      url: 'https://github.com/llvm/llvm-project.git'
+  - template: checkout-submodule.yml
+    parameters:
+      enabled: true
+      path: 'boost-math'
+      url: 'https://github.com/boostorg/math.git'
+  - template: checkout-submodule.yml
+    parameters:
+      enabled: ${{ parameters.buildBenchmarks }}
+      path: 'benchmarks/google-benchmark'
+      url: 'https://github.com/google/benchmark.git'
+  - template: cmake-configure-build.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      analyzeBuild: ${{ parameters.analyzeBuild }}
+      asanBuild: ${{ parameters.asanBuild }}
+      testsBuildOnly: ${{ parameters.testsBuildOnly }}
+  - template: build-benchmarks.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      compiler: cl
+  - template: build-benchmarks.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      buildBenchmarks: ${{ parameters.buildBenchmarks }}
+      compiler: clang-cl
+  - template: run-tests.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.targetArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      testTargets: ${{ parameters.testTargets }}
+      skipTesting: ${{ parameters.skipTesting }}

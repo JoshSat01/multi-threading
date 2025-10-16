@@ -1,0 +1,48 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# Build STL targeting x86 and x64, and run extra ASan testing
+
+variables:
+  - template: config.yml
+
+trigger: none
+
+schedules:
+- cron: '0 2 * * *'
+  displayName: ASan-Daily-CI
+  branches:
+    include:
+    - main
+
+stages:
+  - stage: Build_And_Test_x64
+    displayName: 'Build and Test x64'
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: build-and-test.yml
+        parameters:
+          hostArch: x64
+          targetArch: x64
+          targetPlatform: x64
+          asanBuild: true
+          testTargets: STL-ASan-CI
+
+  - stage: Build_And_Test_x86
+    displayName: 'Build and Test x86'
+    dependsOn: []
+    pool:
+      name: ${{ variables.poolName }}
+      demands: ${{ variables.poolDemands }}
+    jobs:
+      - template: build-and-test.yml
+        parameters:
+          hostArch: x86
+          targetArch: x86
+          targetPlatform: x86
+          asanBuild: true
+          testTargets: STL-ASan-CI
+
+  # no coverage for ARM64
