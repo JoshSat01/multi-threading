@@ -1,0 +1,8 @@
+Red (!)
+Blue (?)
+Green (*)
+Yellow (^)
+Pink (&)
+Purple (~)
+Mustard (todo)
+Grey (//)

@@ -41,7 +41,7 @@
 typedef struct {
     volatile bool locked; /* volatile is telling compiler like this variable 
     should be accessed from memory every time , not from previously cached registers */
-    const char name[32];
+    char name[32];
     //padding to make structure size 64 bytes for lock cache memory alignment
     char padding[64 - sizeof(bool) - 32];
 } mylock_t;

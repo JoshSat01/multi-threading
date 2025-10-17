@@ -64,4 +64,21 @@ mylock_t memory_lock = { .locked = false, .name = "memory_lock" };
 
 
 
+void mylock_init(mylock_t *lock, const char *name) {
+    lock->locked = false;
+    strncpy(lock->name, name, sizeof(lock->name) - 1);
+    lock->name[sizeof(lock->name) - 1] = '\0'; // Ensure null-termination
+}
+
+
+_Acquires_exclusive_lock_(lock)
+void mylock_lock(mylock_t *lock) {
+    while (__sync_lock_test_and_set(&lock->locked, true)) {
+        // Busy-wait (spin) until the lock is acquired
+        // Optionally, you can add a pause or yield instruction here
+    }
+}
+
+
+
 
