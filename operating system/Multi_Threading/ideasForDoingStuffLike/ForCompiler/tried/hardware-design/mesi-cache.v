@@ -1,12 +1,13 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Bug Makers Inc.
+// Engineer: 👽
 // 
 // Create Date:    19:12:12 10/16/2025 
 // Design Name: 
 // Module Name:    CacheController 
-// Project Name: 
+// Project Name: 🐞
+// PROJECT TRYING DEEPSEEK LINK : https://chat.deepseek.com/share/wk686d3grstv0d5toj
 // Target Devices: 
 // Tool versions: 
 // Description: 
@@ -23,11 +24,12 @@
 
 /*
 
-todo  handles cache coherency or [atomicity ??] between 4 cores
+todo  handles cache coherency or [atomicity ??] between 2 cores
 
 ! this will happen inside core ??  or outside core ?? 
 ^ [just circling around words that are taged as believable , how to achieve like what really that is ??]
 
+~ here going with in hardware design level flipping bits like 0 to 1 or 1 to 0...............
 
 */
 module CacheController(
@@ -54,17 +56,9 @@ typedef enum logic [1:0] {
 } mesi_state_t;
 
 
-//~ cache line structure 64 lines , each line 4 words = 16 bytes
-typedef struct packed{
-    logic [19:0] tag; //& 20 bits tag for 4KB memory with 16 bytes line size
-    mesi_
-} cache_line_t;
-
-
-cache_line_t cache_core[1:0] [0:CACHE_LINES-1]; //^ 2 cores , each with 64 cache lines
-
+//~ //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
-! in hardware the above line , 
+! in hardware the below line , 
 ~ cache_core becomes
 
 ///////////////////////////////////////////////////////////////////////
@@ -87,5 +81,38 @@ Bank 1: [0:CACHE_LINES-1]
 
 ////////////////////////////////////////////////////////////////////////
 */
+
+//~ cache line structure 64 lines total , each line holds below design
+typedef struct packed{
+    logic [19:0] tag; //& 20 bits tag for 4KB memory with 16 bytes line size
+    mesi_state_t state; //& mesi state of the cache line that handles atomicity
+    logic [31:0] data [0:3] ; //& 4 words of data per cache line
+    logic valid; //& valid bit to indicate if the cache line contains valid data
+    logic dirty; //& dirty bit to indicate if the cache line has been modified
+} cache_line_t;
+
+
+cache_line_t cache_core[1:0] [0:CACHE_LINES-1]; //^ 2 cores , each with 64 cache lines
+
+//~ //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ! know about what ??
+
+//directory
+typedef struct packed {
+    logic [1:0] where_this_block_is_cached; //& 2 bits to indicate which cores have this block cached
+    logic owner_core; //& which core is the owner of this block
+    mesi_state_t global_state_core [1:0]; //& mesi state for each core
+} directory_entry_t;
+
+directory_entry_t directory [0:memory_block-1]; //^ directory for main memory blocks
+
+
+//~ //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Main state machine and logic to handle MESI protocol will be implemented here
+always @(posedge clk or posedge reset) begin
+  
+end
 
 endmodule
