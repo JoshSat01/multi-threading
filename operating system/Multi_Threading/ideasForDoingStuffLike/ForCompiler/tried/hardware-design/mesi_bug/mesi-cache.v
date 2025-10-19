@@ -37,7 +37,7 @@ module CacheController(
     input wire clk,// system clock , going with CPU clock that will make this flow synchronized
     input wire reset, // system reset , for initializing state machines and registers or going to known state or default state
 
-    input wire [1:0] which_core_requesting // which core is requesting the data , 2 bits for 4 cores
+    input wire [1:0] which_core_requested // which core is requesting the data , 2 bits for 4 cores
 );
 
 
@@ -110,9 +110,24 @@ directory_entry_t directory [0:memory_block-1]; //^ directory for main memory bl
 
 //~ //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+logic is_core_making_bugs; //& ⚡flag to indicate if the controller is idle
+
+//~ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main state machine and logic to handle MESI protocol will be implemented here
 always @(posedge clk or posedge reset) begin
   
 end
 
+
+/*
+~ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+                    FUNCTIONS AND TASKS FOR CACHE CONTROLLER
+
+~ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+*/
+
+function logic 
+
+//~ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 endmodule
