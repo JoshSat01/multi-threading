@@ -37,12 +37,14 @@ module CacheController(
     input wire clk,// system clock , going with CPU clock that will make this flow synchronized
     input wire reset, // system reset , for initializing state machines and registers or going to known state or default state
 
-    input wire [1:0] which_core_requested // which core is requesting the data , 2 bits for 4 cores
+    input wire [1:0] which_core_requested, // which core is requesting the cache , 2 bits for 2 cores 2'b01 _ core 0 , 2'b10 _ core 1
+    input wire [31:0] cache_add [1:0], // address from cores
+    input wire cache_rw[1:0], //1 for write, 0 for read
+    input wire [31:0] cache_data_out[1:0] //data to be written to cache from cores
+
 );
 
-
-
-parameter CACHE_LINES = 64; //& number of cache lines per core
+parameter CACHE_LINES = 64; //& number of cache lines per core // this count 
 parameter CACHE_LINE_SIZE = 4; //& size of each cache line in bytes , here 4 words = 16 bytes
 parameter memory_block = 4096; //& size of main memory in bytes , 4KB
 
@@ -110,12 +112,51 @@ directory_entry_t directory [0:memory_block-1]; //^ directory for main memory bl
 
 //~ //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-logic is_core_making_bugs; //& ⚡flag to indicate if the controller is idle
+// Internal signals
+logic [1:0] current_core;
+logic [31:0] current_addr;
+logic current_rw;
+logic [31:0] current_data;
+logic [3:0] burst_count;
+
+logic is_cache_making_bugs; //& ⚡flag to indicate if the cache controller is idle
+
+//~ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ! state machine and logic to handle MESI protocol
+
+typedef enum logic [3:0]{
+    IDLE = 4'b0000
+} state_type;
+
+state_type state;
 
 //~ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main state machine and logic to handle MESI protocol will be implemented here
 always @(posedge clk or posedge reset) begin
-  
+    if(reset) begin 
+        is_cache_making_bugs <= 1'b0; //& on reset , cache is idle
+    end
+    else begin 
+        case(state)
+            IDLE: begin 
+                //here if more cores requesting at the same time , we can have priority based handling , can ask why core 0 ?? 
+                if(which_core_requested == 2'b01 && !is_cache_making_bugs ) begin
+                    current_core <= 0;
+                    current_addr <= core_addr[0];
+                    current_rw <= core_rw[0];
+                    current_data <= core_data_in[0];
+                    is_cache_making_bugs <= 1;
+                end else if(which_core_requested == 2'b10 && !is_cache_making_bugs ) begin
+                    current_core <= 1;
+                    current_addr <= core_addr[1];
+                    current_rw <= core_rw[1];
+                    current_data <= core_data_in[1];
+                    is_cache_making_bugs <= 1;
+                end
+            end
+        endcase
+    end
 end
 
 
@@ -127,7 +168,8 @@ end
 ~ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 */
 
-function logic 
+
 
 //~ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 endmodule

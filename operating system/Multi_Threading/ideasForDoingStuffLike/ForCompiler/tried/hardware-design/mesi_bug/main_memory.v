@@ -34,7 +34,7 @@ typedef enum logic [2:0] {
 
 reg [31:0] _0xff [0:16777215]; // 16MB memory
 reg [31:0] current_address;
-reg operation_active;
+reg operation_active; // this will handle memory availability like if a memory operation is ongoing
 reg burst_counter[3:0];//for counting , ??
 reg memory_buffer[31:0];//for storing data temporarily
 
@@ -44,13 +44,12 @@ always @(posedge clk or posedge reset) begin
     end else begin
         case (state) 
             MEMORY_IDLE: begin
-                memory_ready_to_interface <= 1; // accessible
+                memory_ready_to_interface <= 0; // not accessible this cycle
                 memory_buffer <= 0;
                 if(memory_request && !operation_active) begin
                     current_address <= memory_address;
                     memory_buffer <= 0;
-                    operation_active <= 1;
-                    memory_ready_to_interface <= 0;//but still that data in in available ??
+                    operation_active <= 1;// mark memory as busy
                     burst_counter <= 0;
                     if(memory_rw) begin
                         state <= MEMORY_WRITE;

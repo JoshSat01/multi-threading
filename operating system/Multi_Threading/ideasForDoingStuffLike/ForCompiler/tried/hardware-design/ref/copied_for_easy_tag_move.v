@@ -37,6 +37,8 @@ typedef enum logic [1:0] {
 } mesi_state_t;
 
 // Cache line structure
+
+
 typedef struct packed {
     logic [19:0] tag;           // 20-bit tag (for 32-bit address)
     mesi_state_t state;         // MESI state
@@ -148,7 +150,10 @@ always @(posedge clk or posedge reset) begin
     end else begin
         case (current_state)
             IDLE: begin
-                core_ready <= 2'b00;
+                core_ready <= 2'b00; /*
+                    ~ two bits to indicate which core is ready like they represent two cores here
+                    ! telling both cores as cache is not ready for any operation right now
+                */
                 mem_req <= 0;
                 
                 // Priority: core 0 then core 1
