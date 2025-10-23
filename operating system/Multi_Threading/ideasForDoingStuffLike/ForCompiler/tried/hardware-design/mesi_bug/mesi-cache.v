@@ -44,9 +44,7 @@ module CacheController(
 
 );
 
-parameter CACHE_LINES = 64; //& number of cache lines per core // this count 
-parameter CACHE_LINE_SIZE = 4; //& size of each cache line in bytes , here 4 words = 16 bytes
-parameter memory_block = 4096; //& size of main memory in bytes , 4KB
+parameter CACHE_LINES = 64; //& number of cache lines per core to hold data like memory 
 
 
 //~ mesi states
@@ -127,6 +125,7 @@ logic is_cache_making_bugs; //& ⚡flag to indicate if the cache controller is i
 
 typedef enum logic [3:0]{
     IDLE = 4'b0000,
+    BUG_CACHED = 4'b0001 //🐞
 
 } state_type;
 
@@ -156,6 +155,10 @@ always @(posedge clk or posedge reset) begin
                     is_cache_making_bugs <= 1;
                 end
             end
+            BUG_CACHED:begin 
+
+            end
+
         endcase
     end
 end
@@ -173,35 +176,30 @@ end
 //& to get location in cache based on 8 bit or 1 byte memory address // here in memory is byte addressable or each 8 bit
 //&                   tag(22 bits)    index(6 bits)    offset(2 bits) 
 //! 32 bit address -> [31:10]            [9:4]             [3:2]        [1:0]   here this is start of memory location not cache line offset
+//~ making 64 blocks , each block has 64 lines , each line has 16 bytes (4 words of 32 bits)
+//~ so need 12 bits for block address to point to specific cache line in block
+//&                 block_address[15:4]
 
-
-
-
-
-function logic can_access_cache;
+function logic [1:0] get_offset;
     input logic [31:0] addr;
-    input logic which_core;
-
-    case(cache[which_core][get_index(addr)].state)
-        MODIFIED, EXCLUSIVE: begin
-            can_access_cache = 1'b1;
-        end
-        SHARED: begin
-            can_access_cache = 1'b1;
-        end
-        INVALID: begin
-            can_access_cache = 1'b0;
-        end
-        default: begin
-            can_access_cache = 1'b0;
-        end
-
-    endcase
+    get_offset = addr[3:2];
 endfunction
 
+function logic [5:0] get_index;
+    input logic [31:0] addr;
+    get_index = addr[9:4];
+endfunction
 
+function logic [19:0] get_tag;
+    input logic [31:0] addr;
+    get_tag = addr[31:10];  
+endfunction
 
-
+//32 bit address and here 64 blocks of memory in cache , so need 6 bits to address 64 blocks
+function logic [11:0] get_block_addr;
+    input logic [31:0] addr;
+    get_block_addr = addr[15:4];  // 12-bit block address (64 blocks) to point to specific cache in block
+endfunction
 
 
 //~ /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
