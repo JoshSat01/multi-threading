@@ -126,7 +126,8 @@ logic is_cache_making_bugs; //& ⚡flag to indicate if the cache controller is i
 // ! state machine and logic to handle MESI protocol
 
 typedef enum logic [3:0]{
-    IDLE = 4'b0000
+    IDLE = 4'b0000,
+
 } state_type;
 
 state_type state;
@@ -167,6 +168,39 @@ end
 
 ~ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 */
+
+
+//& to get location in cache based on 8 bit or 1 byte memory address // here in memory is byte addressable or each 8 bit
+//&                   tag(22 bits)    index(6 bits)    offset(2 bits) 
+//! 32 bit address -> [31:10]            [9:4]             [3:2]        [1:0]   here this is start of memory location not cache line offset
+
+
+
+
+
+function logic can_access_cache;
+    input logic [31:0] addr;
+    input logic which_core;
+
+    case(cache[which_core][get_index(addr)].state)
+        MODIFIED, EXCLUSIVE: begin
+            can_access_cache = 1'b1;
+        end
+        SHARED: begin
+            can_access_cache = 1'b1;
+        end
+        INVALID: begin
+            can_access_cache = 1'b0;
+        end
+        default: begin
+            can_access_cache = 1'b0;
+        end
+
+    endcase
+endfunction
+
+
+
 
 
 
