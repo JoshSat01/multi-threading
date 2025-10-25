@@ -105,7 +105,7 @@ function logic [1:0] get_offset;
     get_offset = addr[5:4];  // Word offset within cache line
 endfunction
 
-// Cache hit detection
+// Cache hit detection 
 function logic cache_hit;
     input [1:0] core;
     input [31:0] addr;

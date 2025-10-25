@@ -155,7 +155,12 @@ always @(posedge clk or posedge reset) begin
                     is_cache_making_bugs <= 1;
                 end
             end
-            BUG_CACHED:begin 
+            BUG_ALREADY_THERE:begin 
+                if(is_bug_in_cache(current_core, current_addr)) begin
+                    
+                end else begin 
+
+                end
 
             end
 
@@ -199,6 +204,26 @@ endfunction
 function logic [11:0] get_block_addr;
     input logic [31:0] addr;
     get_block_addr = addr[15:4];  // 12-bit block address (64 blocks) to point to specific cache in block
+endfunction
+
+
+//is bug in cache
+function logic is_bug_in_cache;
+    input logic [1:0] core;
+    input logic [31:0] addr;
+    logic [5:0] index;
+    logic [19:0] tag;   
+
+    index = get_index(addr);
+    tag = get_tag(addr);
+    if(
+        cache_core[core][index].tag == tag && 
+        cache_core[core][index].state != INVALID
+    ) begin
+        is_bug_in_cache = 1'b1; // bug is present in cache
+    end else begin
+        is_bug_in_cache = 1'b0; // bug not present in cache
+    end
 endfunction
 
 
