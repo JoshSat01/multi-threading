@@ -21,10 +21,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 //~ MESI Cache Coherency Protocol
-
+//~ here bug is representing data that is being handled between cores something like that
 /*
 
-todo  handles cache coherency or [atomicity ??] between 2 cores
+// todo  handles cache coherency or [atomicity ??] between 2 cores
 
 ! this will happen inside core ??  or outside core ?? 
 ^ [just circling around words that are taged as believable , how to achieve like what really that is ??]

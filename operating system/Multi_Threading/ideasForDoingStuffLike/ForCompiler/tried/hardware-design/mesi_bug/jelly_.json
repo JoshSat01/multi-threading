@@ -1,0 +1,29 @@
+{
+    "jelly_name" : "MESI cache coherence bug",
+    "cache"      : {
+        "//"     : "valid bits effects in MESI protocol",
+
+        "memory layout of each cache line" :{
+            "tag"   : "20 bits",
+            "state" : "MESI state",
+            "data"  : "4 words (32 bits each)",
+
+            "valid" : {
+                "memory size" : "1 bit",
+                "valid"       :{
+                    "where_jelly_changed" :[
+                        "UPDATE_CACHE",
+                        "reset"
+                    ],
+                    "where_jelly_affects" :[
+                        "INVALIDATE_OTHERS",
+                        "CACHE_LOOKUP"
+                    ]
+                }
+            },
+
+            "dirty" : "1 bit"
+        }
+
+    }
+}
